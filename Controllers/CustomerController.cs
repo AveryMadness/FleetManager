@@ -47,7 +47,7 @@ public class CustomerController : Controller
 
     // GET /Customer/Create
     [Authorize(Policy = "Staff")]
-    public IActionResult Create() => View();
+    public IActionResult Create() => View(new Customer());
 
     // POST /Customer/Create
     [HttpPost, ValidateAntiForgeryToken, Authorize(Policy = "Staff")]

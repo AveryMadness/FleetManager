@@ -51,7 +51,7 @@ public class VehicleController : Controller
     public async Task<IActionResult> Create()
     {
         await PopulateDropdowns();
-        return View();
+        return View(new Vehicle());
     }
 
     // POST /Vehicle/Create
