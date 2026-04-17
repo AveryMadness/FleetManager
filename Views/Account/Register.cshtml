@@ -1,0 +1,43 @@
+@model FleetManager.Models.ViewModels.RegisterViewModel
+@{ ViewData["Title"] = "Add User"; }
+
+<div class="row justify-content-center">
+  <div class="col-lg-5">
+    <div class="card p-4">
+      <h5 class="mb-4">Create staff account</h5>
+      <form asp-action="Register" method="post">
+        @Html.AntiForgeryToken()
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+        <div class="mb-3">
+          <label asp-for="FullName" class="form-label"></label>
+          <input asp-for="FullName" class="form-control"/>
+          <span asp-validation-for="FullName" class="text-danger small"></span>
+        </div>
+        <div class="mb-3">
+          <label asp-for="Email" class="form-label"></label>
+          <input asp-for="Email" class="form-control" type="email"/>
+          <span asp-validation-for="Email" class="text-danger small"></span>
+        </div>
+        <div class="mb-3">
+          <label asp-for="Password" class="form-label"></label>
+          <input asp-for="Password" class="form-control" type="password"/>
+          <span asp-validation-for="Password" class="text-danger small"></span>
+        </div>
+        <div class="mb-3">
+          <label asp-for="ConfirmPassword" class="form-label"></label>
+          <input asp-for="ConfirmPassword" class="form-control" type="password"/>
+          <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+        </div>
+        <div class="mb-4">
+          <label asp-for="Role" class="form-label">Role</label>
+          <select asp-for="Role" class="form-select">
+            <option value="Staff">Staff</option>
+            <option value="Admin">Admin</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary w-100">Create account</button>
+      </form>
+    </div>
+  </div>
+</div>

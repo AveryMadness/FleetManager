@@ -1,0 +1,56 @@
+@model FleetManager.Models.ViewModels.ReportFilterViewModel
+@{ ViewData["Title"] = "Reports"; }
+
+<div class="row g-3 mb-4">
+  @foreach (var (type, icon, title, desc) in new[]
+  {
+    ("ReservationSummary", "bi-calendar3",       "Reservation summary",  "By status and date range"),
+    ("Revenue",            "bi-graph-up",         "Revenue report",       "Monthly collected revenue"),
+    ("FleetUtilization",   "bi-car-front",         "Fleet utilization",    "Days rented per vehicle"),
+    ("CustomerActivity",   "bi-people",            "Customer activity",    "Top customers by bookings"),
+    ("BillingTax",         "bi-receipt",           "Billing & tax",        "Totals, tax, discounts"),
+    ("LateReturns",        "bi-clock-history",     "Late returns",         "Overdue active reservations"),
+  })
+  {
+    <div class="col-sm-6 col-lg-4">
+      <button type="button"
+              class="card text-start border-0 w-100 h-100 p-3 btn report-btn @(Model.ReportType == type ? "border border-primary" : "")"
+              style="background:#fff;border:1px solid #e5e3f0 !important;"
+              onclick="selectReport('@type', this)">
+        <div class="d-flex align-items-center gap-2 mb-1">
+          <i class="bi @icon fs-5" style="color:#534AB7"></i>
+          <span class="fw-semibold" style="font-size:14px">@title</span>
+        </div>
+        <div class="text-muted" style="font-size:12px">@desc</div>
+      </button>
+    </div>
+  }
+</div>
+
+<form asp-action="Index" method="post" class="card p-3 mb-4">
+  @Html.AntiForgeryToken()
+  <input type="hidden" name="ReportType" id="reportTypeInput" value="@Model.ReportType"/>
+  <div class="row g-2 align-items-end">
+    <div class="col-md-4">
+      <label class="form-label">From</label>
+      <input asp-for="StartDate" type="date" class="form-control"/>
+    </div>
+    <div class="col-md-4">
+      <label class="form-label">To</label>
+      <input asp-for="EndDate" type="date" class="form-control"/>
+    </div>
+    <div class="col-md-4 d-flex gap-2">
+      <button type="submit" class="btn btn-primary flex-grow-1">
+        <i class="bi bi-play me-1"></i> Generate
+      </button>
+    </div>
+  </div>
+</form>
+
+<script>
+function selectReport(type, btn) {
+  document.getElementById('reportTypeInput').value = type;
+  document.querySelectorAll('.report-btn').forEach(b => b.style.borderColor = '#e5e3f0');
+  btn.style.borderColor = '#534AB7';
+}
+</script>

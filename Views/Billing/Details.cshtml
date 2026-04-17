@@ -1,0 +1,236 @@
+@model FleetManager.Models.Invoice
+@{ ViewData["Title"] = $"Invoice INV-{Model.Id}"; }
+
+@section TopbarActions {
+  <a asp-action="Index" class="btn btn-outline-secondary btn-sm">Back to billing</a>
+}
+
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <!-- Invoice header -->
+    <div class="card mb-3">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start mb-3">
+          <div>
+            <h4 class="mb-0" style="color:#534AB7">FleetManager</h4>
+            <div class="text-muted small">Vehicle Rental Management</div>
+          </div>
+          <div class="text-end">
+            <div class="fw-bold fs-5">INV-@Model.Id</div>
+            <div class="text-muted small">Issued @Model.IssuedAt.ToString("MMMM d, yyyy")</div>
+            <span class="badge-status badge-@Model.PaymentStatus.ToString().ToLower()">@Model.PaymentStatus</span>
+          </div>
+        </div>
+
+        <hr/>
+
+        <div class="row g-3 mb-3" style="font-size:13.5px">
+          <div class="col-sm-6">
+            <div class="text-muted small mb-1 fw-semibold text-uppercase" style="font-size:11px;letter-spacing:.05em">Customer</div>
+            <div class="fw-semibold">@Model.Reservation?.Customer?.FullName</div>
+            <div class="text-muted">@Model.Reservation?.Customer?.Email</div>
+            <div class="text-muted">@Model.Reservation?.Customer?.Phone</div>
+          </div>
+          <div class="col-sm-6">
+            <div class="text-muted small mb-1 fw-semibold text-uppercase" style="font-size:11px;letter-spacing:.05em">Reservation</div>
+            <div>Res. #@Model.ReservationId</div>
+            <div class="text-muted">
+              @Model.Reservation?.Vehicle?.Year @Model.Reservation?.Vehicle?.Make @Model.Reservation?.Vehicle?.Model
+            </div>
+            <div class="text-muted">
+              @Model.Reservation?.StartDate.ToString("MMM d") - @Model.Reservation?.EndDate.ToString("MMM d, yyyy")
+              (@Model.Reservation?.TotalDays days)
+            </div>
+          </div>
+        </div>
+
+        <hr/>
+
+        <!-- Line items -->
+        <div class="invoice-line">
+          <span>Base rental
+            (@Model.Reservation?.Vehicle?.DailyRate.ToString("C0")/day
+            x @Model.Reservation?.TotalDays days)
+          </span>
+          <span>@Model.BaseAmount.ToString("C2")</span>
+        </div>
+
+        @foreach (var charge in Model.AdditionalCharges)
+        {
+          <div class="invoice-line">
+            <span>@charge.Description</span>
+            <span>@charge.Amount.ToString("C2")</span>
+          </div>
+        }
+
+        @if (Model.Discount > 0)
+        {
+          <div class="invoice-line" style="color:#1a7a4a">
+            <span>Discount</span>
+            <span>-@Model.Discount.ToString("C2")</span>
+          </div>
+        }
+
+        <div class="invoice-line text-muted">
+          <span>Tax (13%)</span>
+          <span>@Model.TaxAmount.ToString("C2")</span>
+        </div>
+
+        <div class="invoice-line" style="font-size:18px;padding-top:12px;border-top:2px solid #1e1e2d;margin-top:4px">
+          <span>Total</span>
+          <span>@Model.TotalAmount.ToString("C2")</span>
+        </div>
+
+        @if (Model.PaidAt.HasValue)
+        {
+          <div class="text-success small mt-2">
+            <i class="bi bi-check-circle me-1"></i>
+            Paid on @Model.PaidAt.Value.ToString("MMMM d, yyyy")
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Additional charges form -->
+    @if (Model.PaymentStatus != FleetManager.Models.PaymentStatus.Paid)
+    {
+      <div class="card mb-3">
+        <div class="card-header">Add charge</div>
+        <div class="card-body">
+          <form asp-action="AddCharge" method="post" class="row g-2 align-items-end">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="invoiceId" value="@Model.Id"/>
+            <div class="col-md-6">
+              <label class="form-label">Description</label>
+              <input name="description" class="form-control" placeholder="e.g. GPS rental, extra driver, late fee"/>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Amount ($)</label>
+              <input name="amount" type="number" step="0.01" min="0" class="form-control"/>
+            </div>
+            <div class="col-md-3">
+              <button type="submit" class="btn btn-outline-primary w-100">
+                <i class="bi bi-plus me-1"></i> Add
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      @if (Model.AdditionalCharges.Any())
+      {
+        <div class="card mb-3">
+          <div class="card-header">Existing charges</div>
+          <div class="table-responsive">
+            <table class="table mb-0" style="font-size:13px">
+              <thead><tr><th>Description</th><th>Amount</th><th></th></tr></thead>
+              <tbody>
+              @foreach (var c in Model.AdditionalCharges)
+              {
+                <tr>
+                  <td>@c.Description</td>
+                  <td>@c.Amount.ToString("C2")</td>
+                  <td>
+                    <form asp-action="RemoveCharge" method="post" class="d-inline">
+                      @Html.AntiForgeryToken()
+                      <input type="hidden" name="chargeId" value="@c.Id"/>
+                      <input type="hidden" name="invoiceId" value="@Model.Id"/>
+                      <button type="submit" class="btn btn-sm btn-outline-danger"
+                              data-confirm="Remove this charge?">Remove</button>
+                    </form>
+                  </td>
+                </tr>
+              }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      }
+
+      <!-- Payment actions -->
+      <div class="d-flex gap-2">
+        <form asp-action="MarkPaid" asp-route-id="@Model.Id" method="post">
+          @Html.AntiForgeryToken()
+          <button type="submit" class="btn btn-success"
+                  data-confirm="Mark invoice INV-@Model.Id as paid?">
+            <i class="bi bi-check-circle me-1"></i> Mark as paid
+          </button>
+        </form>
+
+        <div id="payment-element" class="mb-3" style="display:none"></div>
+        
+        <button id="payNowBtn" class="btn btn-primary"
+                data-invoice-id="@Model.Id"
+                data-pub-key="@ViewBag.StripePublishableKey">
+          <i class="bi bi-credit-card me-1"></i> Pay via Stripe
+        </button>
+      </div>
+    }
+    else
+    {
+      <div class="alert alert-success d-flex align-items-center gap-2">
+        <i class="bi bi-check-circle-fill"></i>
+        This invoice has been paid. No further action required.
+      </div>
+    }
+  </div>
+</div>
+
+@section Scripts {
+    <script src="https://js.stripe.com/v3/"></script>
+    <script>
+        const payBtn = document.getElementById('payNowBtn');
+        if (payBtn) {
+            const invoiceId = payBtn.dataset.invoiceId;
+            const pubKey    = payBtn.dataset.pubKey;
+            const stripe    = Stripe(pubKey);
+            let elements;
+
+            payBtn.addEventListener('click', async () => {
+                const paymentDiv = document.getElementById('payment-element');
+
+                if (paymentDiv.style.display === 'none') {
+                    payBtn.disabled = true;
+                    payBtn.textContent = 'Loading…';
+
+                    const res = await fetch('/Billing/CreateStripePaymentIntent', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ invoiceId: parseInt(invoiceId) })
+                    });
+
+                    if (!res.ok) {
+                        alert('Payment setup failed.');
+                        payBtn.disabled = false;
+                        payBtn.textContent = 'Pay via Stripe';
+                        return;
+                    }
+
+                    const { clientSecret } = await res.json();
+                    elements = stripe.elements({ clientSecret });
+                    const paymentElement = elements.create('payment');
+                    paymentElement.mount('#payment-element');
+
+                    paymentDiv.style.display = 'block';
+                    payBtn.disabled = false;
+                    payBtn.textContent = 'Submit payment';
+                    return;
+                }
+
+                payBtn.disabled = true;
+                payBtn.textContent = 'Processing…';
+
+                const { error } = await stripe.confirmPayment({
+                    elements,
+                    confirmParams: { return_url: window.location.href }
+                });
+
+                if (error) {
+                    alert(error.message);
+                    payBtn.disabled = false;
+                    payBtn.textContent = 'Submit payment';
+                }
+            });
+        }
+    </script>
+}

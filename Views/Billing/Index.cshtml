@@ -1,0 +1,92 @@
+@model FleetManager.Models.ViewModels.BillingViewModel
+@{ ViewData["Title"] = "Billing & Invoices"; }
+
+<div class="row g-3 mb-4">
+  <div class="col-sm-4">
+    <div class="stat-card">
+      <div class="stat-label">Outstanding</div>
+      <div class="stat-value @(Model.OutstandingTotal > 0 ? "text-danger" : "")">
+        @Model.OutstandingTotal.ToString("C0")
+      </div>
+      <div class="stat-delta text-muted">Unpaid / overdue</div>
+      <i class="bi bi-exclamation-triangle stat-icon"></i>
+    </div>
+  </div>
+  <div class="col-sm-4">
+    <div class="stat-card">
+      <div class="stat-label">Collected this month</div>
+      <div class="stat-value">@Model.CollectedMonth.ToString("C0")</div>
+      <div class="stat-delta text-muted">Paid invoices</div>
+      <i class="bi bi-cash stat-icon"></i>
+    </div>
+  </div>
+  <div class="col-sm-4">
+    <div class="stat-card">
+      <div class="stat-label">Avg. invoice</div>
+      <div class="stat-value">@Model.AverageInvoice.ToString("C0")</div>
+      <div class="stat-delta text-muted">All time</div>
+      <i class="bi bi-receipt stat-icon"></i>
+    </div>
+  </div>
+</div>
+
+<!-- Filter -->
+<form method="get" class="row g-2 mb-3">
+  <div class="col-md-4">
+    <select name="status" class="form-select">
+      <option value="">All statuses</option>
+      @foreach (var s in Enum.GetValues<FleetManager.Models.PaymentStatus>())
+      {
+        <option value="@s" selected="@(ViewBag.StatusFilter?.ToString() == s.ToString())">@s</option>
+      }
+    </select>
+  </div>
+  <div class="col-auto">
+    <button type="submit" class="btn btn-primary">Filter</button>
+    <a asp-action="Index" class="btn btn-outline-secondary ms-1">Reset</a>
+  </div>
+</form>
+
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead>
+        <tr>
+          <th>Invoice</th>
+          <th>Reservation</th>
+          <th>Customer</th>
+          <th>Base</th>
+          <th>Tax</th>
+          <th>Total</th>
+          <th>Status</th>
+          <th>Issued</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (!Model.Invoices.Any())
+        {
+          <tr><td colspan="9" class="text-center text-muted py-4">No invoices found.</td></tr>
+        }
+        @foreach (var inv in Model.Invoices)
+        {
+          <tr>
+            <td><a asp-action="Details" asp-route-id="@inv.Id">INV-@inv.Id</a></td>
+            <td><a asp-controller="Reservation" asp-action="Details" asp-route-id="@inv.ReservationId">#@inv.ReservationId</a></td>
+            <td>@inv.Reservation?.Customer?.FullName</td>
+            <td>@inv.BaseAmount.ToString("C2")</td>
+            <td>@inv.TaxAmount.ToString("C2")</td>
+            <td><strong>@inv.TotalAmount.ToString("C2")</strong></td>
+            <td>
+              <span class="badge-status badge-@inv.PaymentStatus.ToString().ToLower()">@inv.PaymentStatus</span>
+            </td>
+            <td>@inv.IssuedAt.ToString("MMM d, yyyy")</td>
+            <td>
+              <a asp-action="Details" asp-route-id="@inv.Id" class="btn btn-sm btn-outline-secondary">View</a>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

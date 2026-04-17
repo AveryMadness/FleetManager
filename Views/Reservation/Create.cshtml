@@ -1,0 +1,80 @@
+@model FleetManager.Models.Reservation
+@{ ViewData["Title"] = Model.Id == 0 ? "New Reservation" : "Edit Reservation"; }
+
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <form asp-action="@(Model.Id == 0 ? "Create" : "Edit")" method="post">
+      @Html.AntiForgeryToken()
+      <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+      <div class="form-section">
+        <div class="form-section-title"><i class="bi bi-person me-2"></i>Customer</div>
+        <div class="mb-3">
+          <label asp-for="CustomerId" class="form-label">Customer</label>
+          <select asp-for="CustomerId" asp-items="@ViewBag.Customers" class="form-select">
+            <option value="">Select customer…</option>
+          </select>
+          <span asp-validation-for="CustomerId" class="text-danger small"></span>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title"><i class="bi bi-car-front me-2"></i>Vehicle &amp; dates</div>
+        <div class="row g-3">
+          <div class="col-12">
+            <label asp-for="VehicleId" class="form-label">Vehicle</label>
+            <select asp-for="VehicleId" asp-items="@ViewBag.Vehicles"
+                    id="vehicleSelect" class="form-select">
+              <option value="">Select vehicle…</option>
+            </select>
+            <span asp-validation-for="VehicleId" class="text-danger small"></span>
+            <div class="mt-1"><span id="availBadge" class="badge"></span></div>
+          </div>
+          <div class="col-md-6">
+            <label asp-for="StartDate" class="form-label"></label>
+            <input asp-for="StartDate" id="startDate" type="date" class="form-control"/>
+            <span asp-validation-for="StartDate" class="text-danger small"></span>
+          </div>
+          <div class="col-md-6">
+            <label asp-for="EndDate" class="form-label"></label>
+            <input asp-for="EndDate" id="endDate" type="date" class="form-control"/>
+            <span asp-validation-for="EndDate" class="text-danger small"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title"><i class="bi bi-geo-alt me-2"></i>Locations</div>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label asp-for="PickupLocation" class="form-label"></label>
+            <input asp-for="PickupLocation" class="form-control" placeholder="Branch / address"/>
+          </div>
+          <div class="col-md-6">
+            <label asp-for="ReturnLocation" class="form-label"></label>
+            <input asp-for="ReturnLocation" class="form-control" placeholder="Branch / address"/>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title"><i class="bi bi-chat-left-text me-2"></i>Notes</div>
+        <textarea asp-for="Notes" class="form-control" rows="2"
+                  placeholder="Any special requests or notes…"></textarea>
+      </div>
+
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary">
+          <i class="bi bi-floppy me-1"></i>
+          @(Model.Id == 0 ? "Create Reservation" : "Save Changes")
+        </button>
+        <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+      </div>
+    </form>
+
+    <!-- Google Maps embed for location -->
+    <div id="map" class="mt-4 rounded" style="height:280px;background:#f0eef8;display:flex;align-items:center;justify-content:center;color:#aaa;">
+      <span><i class="bi bi-map me-2"></i>Map will display here (Google Maps API)</span>
+    </div>
+  </div>
+</div>

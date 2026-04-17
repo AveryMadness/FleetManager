@@ -1,0 +1,64 @@
+@model FleetManager.Models.Vehicle
+@{ ViewData["Title"] = $"{Model.Year} {Model.Make} {Model.Model}"; }
+
+@section TopbarActions {
+  <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-primary btn-sm">Edit</a>
+  <a asp-action="Index" class="btn btn-outline-secondary btn-sm">Back</a>
+}
+
+<div class="row g-3">
+  <div class="col-lg-4">
+    <div class="card p-3 mb-3 text-center">
+      <div class="vehicle-card-img rounded mb-3" style="height:160px">
+        @if (!string.IsNullOrEmpty(Model.ImageUrl))
+        { <img src="@Model.ImageUrl" alt="@Model.Make @Model.Model" class="w-100 h-100 object-fit-cover rounded"/> }
+        else
+        { <i class="bi bi-car-front" style="font-size:56px;color:#b0aecf"></i> }
+      </div>
+      <h5 class="mb-1">@Model.Year @Model.Make @Model.Model</h5>
+      <div class="text-muted small mb-2">@Model.Category?.Name · @Model.LicensePlate</div>
+      <span class="badge-status badge-@Model.Status.ToString().ToLower()">@Model.Status</span>
+    </div>
+    <div class="card p-3">
+      <div class="row g-2 text-center">
+        <div class="col-6">
+          <div style="font-size:20px;font-weight:700;color:#534AB7">@Model.DailyRate.ToString("C0")</div>
+          <div class="text-muted small">Per day</div>
+        </div>
+        <div class="col-6">
+          <div style="font-size:20px;font-weight:700;color:#534AB7">@Model.Mileage.ToString("N0")</div>
+          <div class="text-muted small">Km on odometer</div>
+        </div>
+      </div>
+      @if (!string.IsNullOrEmpty(Model.Notes))
+      {
+        <hr/><div class="small text-muted">@Model.Notes</div>
+      }
+    </div>
+  </div>
+
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-header">Reservation history (@Model.Reservations.Count total)</div>
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead><tr><th>#</th><th>Customer</th><th>From</th><th>To</th><th>Status</th></tr></thead>
+          <tbody>
+            @if (!Model.Reservations.Any())
+            { <tr><td colspan="5" class="text-center text-muted py-3">No reservations for this vehicle.</td></tr> }
+            @foreach (var r in Model.Reservations.OrderByDescending(r => r.StartDate))
+            {
+              <tr>
+                <td><a asp-controller="Reservation" asp-action="Details" asp-route-id="@r.Id">#@r.Id</a></td>
+                <td>@r.Customer?.FullName</td>
+                <td>@r.StartDate.ToString("MMM d, yyyy")</td>
+                <td>@r.EndDate.ToString("MMM d, yyyy")</td>
+                <td><span class="badge-status badge-@r.Status.ToString().ToLower()">@r.Status</span></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

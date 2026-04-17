@@ -1,0 +1,82 @@
+@model IEnumerable<FleetManager.Models.Customer>
+@{ ViewData["Title"] = "Customers"; }
+
+@section TopbarActions {
+  <a asp-action="Create" class="btn btn-primary btn-sm">
+    <i class="bi bi-person-plus me-1"></i> Add Customer
+  </a>
+}
+
+<form method="get" class="row g-2 mb-4">
+  <div class="col-md-6">
+    <input name="search" value="@ViewBag.Search" class="form-control"
+           placeholder="Search name, email, license…"/>
+  </div>
+  <div class="col-md-3">
+    <select name="status" class="form-select">
+      <option value="">All statuses</option>
+      @foreach (var s in Enum.GetValues<FleetManager.Models.CustomerStatus>())
+      {
+        <option value="@s" selected="@(ViewBag.StatusFilter?.ToString() == s.ToString())">@s</option>
+      }
+    </select>
+  </div>
+  <div class="col-md-3 d-flex gap-2">
+    <button type="submit" class="btn btn-primary flex-grow-1">Filter</button>
+    <a asp-action="Index" class="btn btn-outline-secondary">Reset</a>
+  </div>
+</form>
+
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th>License #</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (!Model.Any())
+        {
+          <tr><td colspan="6" class="text-center text-muted py-4">No customers found.</td></tr>
+        }
+        @foreach (var c in Model)
+        {
+          <tr>
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                <div class="avatar-sm" style="background:#AFA9EC;color:#26215C;font-size:11px">
+                  @c.FirstName[..1]@c.LastName[..1]
+                </div>
+                <a asp-action="Details" asp-route-id="@c.Id">@c.FullName</a>
+              </div>
+            </td>
+            <td>@c.Email</td>
+            <td>@c.Phone</td>
+            <td><code>@c.LicenseNumber</code></td>
+            <td><span class="badge-status badge-@c.Status.ToString().ToLower()">@c.Status</span></td>
+            <td>
+              <div class="d-flex gap-1">
+                <a asp-action="Details" asp-route-id="@c.Id" class="btn btn-sm btn-outline-secondary">View</a>
+                <a asp-action="Edit"    asp-route-id="@c.Id" class="btn btn-sm btn-outline-primary">Edit</a>
+                @if (User.IsInRole("Admin"))
+                {
+                  <form asp-action="Delete" asp-route-id="@c.Id" method="post" class="d-inline">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-sm btn-outline-danger"
+                            data-confirm="Deactivate @c.FullName?">Delete</button>
+                  </form>
+                }
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

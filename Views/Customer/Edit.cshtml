@@ -1,0 +1,70 @@
+@model FleetManager.Models.Customer
+@{ ViewData["Title"] = Model.Id == 0 ? "Add Customer" : "Edit Customer"; }
+
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+    <form asp-action="@(Model.Id == 0 ? "Create" : "Edit")" method="post">
+      @Html.AntiForgeryToken()
+      <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+      <div class="form-section">
+        <div class="form-section-title"><i class="bi bi-person me-2"></i>Personal information</div>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label asp-for="FirstName" class="form-label"></label>
+            <input asp-for="FirstName" class="form-control"/>
+            <span asp-validation-for="FirstName" class="text-danger small"></span>
+          </div>
+          <div class="col-md-6">
+            <label asp-for="LastName" class="form-label"></label>
+            <input asp-for="LastName" class="form-control"/>
+            <span asp-validation-for="LastName" class="text-danger small"></span>
+          </div>
+          <div class="col-md-6">
+            <label asp-for="Email" class="form-label"></label>
+            <input asp-for="Email" class="form-control" type="email"/>
+            <span asp-validation-for="Email" class="text-danger small"></span>
+          </div>
+          <div class="col-md-6">
+            <label asp-for="Phone" class="form-label"></label>
+            <input asp-for="Phone" class="form-control" type="tel" placeholder="555-000-0000"/>
+            <span asp-validation-for="Phone" class="text-danger small"></span>
+          </div>
+          <div class="col-md-6">
+            <label asp-for="DateOfBirth" class="form-label"></label>
+            <input asp-for="DateOfBirth" class="form-control" type="date"/>
+          </div>
+          <div class="col-md-6">
+            <label asp-for="Status" class="form-label"></label>
+            <select asp-for="Status" class="form-select"
+                    asp-items="Html.GetEnumSelectList<FleetManager.Models.CustomerStatus>()"></select>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title"><i class="bi bi-card-text me-2"></i>License and address</div>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label asp-for="LicenseNumber" class="form-label"></label>
+            <input asp-for="LicenseNumber" class="form-control" placeholder="DL-000000"/>
+            <span asp-validation-for="LicenseNumber" class="text-danger small"></span>
+          </div>
+          <div class="col-12">
+            <label asp-for="Address" class="form-label"></label>
+            <textarea asp-for="Address" class="form-control" rows="2"
+                      placeholder="Street, City, Province, Postal Code"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary">
+          <i class="bi bi-floppy me-1"></i>
+          @(Model.Id == 0 ? "Add Customer" : "Save Changes")
+        </button>
+        <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,105 @@
+@model FleetManager.Models.ViewModels.ReportResultViewModel
+@{ ViewData["Title"] = Model.Filter.ReportType.Replace("Summary","").Replace("Report","") + " Report"; }
+
+@section TopbarActions {
+  <a asp-action="Export"
+     asp-route-type="@Model.Filter.ReportType"
+     asp-route-start="@Model.Filter.StartDate?.ToString("yyyy-MM-dd")"
+     asp-route-end="@Model.Filter.EndDate?.ToString("yyyy-MM-dd")"
+     class="btn btn-outline-primary btn-sm">
+    <i class="bi bi-download me-1"></i> Export CSV
+  </a>
+  <a asp-action="Index" class="btn btn-outline-secondary btn-sm">← New report</a>
+}
+
+<div class="row g-3 mb-4">
+  <div class="col-sm-4">
+    <div class="stat-card">
+      <div class="stat-label">Total rows</div>
+      <div class="stat-value">@Model.Rows.Count</div>
+    </div>
+  </div>
+  <div class="col-sm-4">
+    <div class="stat-card">
+      <div class="stat-label">Total count</div>
+      <div class="stat-value">@Model.Rows.Sum(r => r.Count)</div>
+    </div>
+  </div>
+  <div class="col-sm-4">
+    <div class="stat-card">
+      <div class="stat-label">Total amount</div>
+      <div class="stat-value">@Model.Total.ToString("C0")</div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-header">Results — @Model.Filter.StartDate?.ToString("MMM d") to @Model.Filter.EndDate?.ToString("MMM d, yyyy")</div>
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead>
+            <tr><th>Label</th><th class="text-end">Count</th><th class="text-end">Amount</th></tr>
+          </thead>
+          <tbody>
+            @if (!Model.Rows.Any())
+            {
+              <tr><td colspan="3" class="text-center text-muted py-4">No data for selected range.</td></tr>
+            }
+            @foreach (var row in Model.Rows)
+            {
+              <tr>
+                <td>@row.Label</td>
+                <td class="text-end">@row.Count</td>
+                <td class="text-end">@row.Amount.ToString("C2")</td>
+              </tr>
+            }
+          </tbody>
+          <tfoot class="fw-bold">
+            <tr>
+              <td>Total</td>
+              <td class="text-end">@Model.Rows.Sum(r => r.Count)</td>
+              <td class="text-end">@Model.Total.ToString("C2")</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card">
+      <div class="card-header">Chart</div>
+      <div class="card-body">
+        <div class="chart-container">
+          <canvas id="reportChart"
+                  data-labels='@Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Rows.Select(r => r.Label)))'
+                  data-values='@Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Rows.Select(r => r.Amount)))'></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+@section Scripts {
+<script>
+const canvas = document.getElementById('reportChart');
+if (canvas) {
+  new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels: JSON.parse(canvas.dataset.labels),
+      datasets: [{ label: 'Amount', data: JSON.parse(canvas.dataset.values),
+                   backgroundColor: 'rgba(83,74,183,0.2)', borderColor: '#534AB7',
+                   borderWidth: 2, borderRadius: 6 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true }, x: { ticks: { maxRotation: 35, font: { size: 10 } } } }
+    }
+  });
+}
+</script>
+}
